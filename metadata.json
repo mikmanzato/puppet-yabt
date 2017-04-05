@@ -1,6 +1,6 @@
 {
   "name": "mikmanzato-yabt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Michele Manzato",
   "summary": "Install and configure yabt, Yet another backup tool.",
   "license": "MIT",

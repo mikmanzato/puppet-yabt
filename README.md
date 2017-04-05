@@ -400,7 +400,7 @@ Dump jobs produce "dump file"s out of the source content. For dump jobs, Yabt
 controls and takes care directly of the backup files produced, as well as 
 retention and incrementality. 
 
-See (here)[https://github.com/mikmanzato/yabt#dump-jobs] for additional 
+See [here](https://github.com/mikmanzato/yabt#dump-jobs) for additional 
 information on dump jobs.
 
 Dump jobs share the following parameters.
@@ -456,7 +456,7 @@ By default, the `dump_location` configured with `yabt` class is used.
 Configures a status notification job. An e-mail is sent with a report of the 
 status of the jobs.
 
-See (here)[https://github.com/mikmanzato/yabt#status-notification-job] 
+See [here](https://github.com/mikmanzato/yabt#status-notification-job)
 for additional usage information.
 
 **Parameters within `yabt::status_notification_job`:**
@@ -476,7 +476,7 @@ Default: `false`
 
 Stores all files from a local directory into a *.tar.bz2* file.
 
-See (here)[https://github.com/mikmanzato/yabt#directory-dump-job] for additional
+See [here](https://github.com/mikmanzato/yabt#directory-dump-job) for additional
 usage information.
 
 **Parameters within `yabt::dir_dump_job`:**
@@ -508,7 +508,7 @@ content stored on the filesystem but referenced by the database.
 See also the [common job parameters](#common-job-parameters) and the 
 [common dump job parameters](#common-dump-job-parameters).
 
-See (here)[https://github.com/mikmanzato/yabt#mysql-dump-job] 
+See [here](https://github.com/mikmanzato/yabt#mysql-dump-job) 
 for additional usage information.
 
 **Parameters within `yabt::mysqldb_dump_job`:**
@@ -544,7 +544,7 @@ local directory.
 See also the [common job parameters](#common-job-parameters) and the 
 [common dump job parameters](#common-dump-job-parameters).
 
-See (here)[https://github.com/mikmanzato/yabt#subversion-repositories-dump-job] 
+See [here](https://github.com/mikmanzato/yabt#subversion-repositories-dump-job) 
 for additional usage information.
 
 **Parameters within `yabt::svnrepositories_dump_job`:**
@@ -561,7 +561,7 @@ Back up a local directory using [rsync](https://rsync.samba.org/).
 
 See also the [common job parameters](#common-job-parameters).
 
-See (here)[https://github.com/mikmanzato/yabt#rsync-job] 
+See [here](https://github.com/mikmanzato/yabt#rsync-job)
 for additional usage information.
 
 **Parameters within `yabt::rsync_job`:**
@@ -586,7 +586,7 @@ Back up a local directory using [duplicity](http://duplicity.nongnu.org/).
 
 See also the [common job parameters](#common-job-parameters).
 
-See (here)[https://github.com/mikmanzato/yabt#duplicity-job] 
+See [here](https://github.com/mikmanzato/yabt#duplicity-job)
 for additional usage information.
 
 **Parameters within `yabt::duplicity_job`:**
@@ -619,7 +619,7 @@ Optional. Number of days after which to run a full backup. Default: 60
 
 Back up a local directory using [rdiff-backup](http://www.nongnu.org/rdiff-backup/).
 
-See (here)[https://github.com/mikmanzato/yabt#rdiff-backup-job] 
+See [here](https://github.com/mikmanzato/yabt#rdiff-backup-job)
 for additional usage information.
 
 **Parameters within `yabt::rdiffbackup_job`:**
