@@ -115,6 +115,7 @@ class yabt(
 }
 
 
+# Private class
 # Generic Yabt job
 define yabt::job (
     $type,
@@ -122,29 +123,35 @@ define yabt::job (
     $phase = undef,
     $recurrence = undef,
     $at = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     include yabt::config
-
-    $recurrence_changes = $recurrence ? {
-        undef => [ "rm job/recurrence" ],
-        default => [ "set job/recurrence $recurrence" ],
-    }
-
-    $at_changes = $at ? {
-        undef => [ "rm job/at" ],
-        default => [ "set job/at $at" ],
-    }
-
-    $phase_changes = $phase ? {
-        undef => [ "rm job/phase" ],
-        default => [ "set job/phase $phase" ],
-    }
 
     $full_conf = "${yabt::config::jobs_dir}/${name}.conf"
 
     if ($ensure == 'present') {
         include yabt
+
+        $enabled_changes = $enabled ? {
+            true   => [ "set job/enabled 1" ],
+            default => [ "set job/enabled 0" ],
+        }
+
+        $phase_changes = $phase ? {
+            undef   => [ "rm job/phase" ],
+            default => [ "set job/phase $phase" ],
+        }
+
+        $recurrence_changes = $recurrence ? {
+            undef   => [ "rm job/recurrence" ],
+            default => [ "set job/recurrence $recurrence" ],
+        }
+
+        $at_changes = $at ? {
+            undef   => [ "rm job/at" ],
+            default => [ "set job/at $at" ],
+        }
 
         # Create empty conf file, otherwise augeas doesn't work properly
         exec { "yabt_create_job_${full_conf}":
@@ -160,7 +167,7 @@ define yabt::job (
             changes => concat([
                 "set job/name $name",
                 "set job/type $type",
-            ], $phase_changes, $recurrence_changes, $at_changes, $changes),
+            ], $enabled_changes, $phase_changes, $recurrence_changes, $at_changes, $changes),
             require => Exec["yabt_create_job_${full_conf}"],
         }
     }
@@ -178,6 +185,7 @@ define yabt::status_notification_job (
     $phase = 9,
     $recurrence = 'weekly',
     $at = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     $complete_changes = $complete ? {
@@ -187,6 +195,7 @@ define yabt::status_notification_job (
 
     yabt::job { $name:
         ensure     => $ensure,
+        enabled    => $enabled,
         type       => "yabt\\StatusNotificationJob",
         phase      => $phase,
         recurrence => $recurrence,
@@ -196,26 +205,31 @@ define yabt::status_notification_job (
 }
 
 
+# Private class
 # Generic dump job
 define yabt::dump_job (
     $type,
     $retention_period = 14,
     $full_period = 7,
+    $incremental = undef,
     $phase = 5,
     $recurrence,
     $at = undef,
     $section,
     $changes,
     $dump_location = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
-    $dump_changes = $dump_location ? {
-        undef => [ "rm dump/location" ],
-        default => [ "set dump/location $dump_location" ],
-    }
+    $incremental_val = $incremental ? {
+		false => 0,
+		true  => 1,
+		undef => undef,
+	}
 
     yabt::job { $name:
         ensure     => $ensure,
+        enabled    => $enabled,
         type       => $type,
         phase      => $phase,
         recurrence => $recurrence,
@@ -223,7 +237,16 @@ define yabt::dump_job (
         changes    => concat([
             "set ${section}/retention_period $retention_period",
             "set ${section}/full_period $full_period",
-        ], $dump_changes, $changes),
+        ], 
+        $dump_location ? {
+			undef => [ "rm ${section}/location" ],
+			default => [ "set ${section}/location $dump_location" ],
+		}, 
+        ($incremental_val != undef) ? {
+			true    => [ "set ${section}/incremental $incremental_val" ],
+			default => [ "rm ${section}/incremental" ],
+		}, 
+		$changes),
     }
 }
 
@@ -234,20 +257,24 @@ define yabt::dir_dump_job(
 
     $retention_period = 14,
     $full_period = 7,
+    $incremental = undef,
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
     $dump_location = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     yabt::dump_job { $name:
         ensure           => $ensure,
+        enabled          => $enabled,
         type             => "yabt\\DirDumpJob",
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,
         retention_period => $retention_period,
         full_period      => $full_period,
+        incremental      => $incremental,
         section          => "dir",
         dump_location    => $dump_location,
         changes          => [
@@ -261,19 +288,23 @@ define yabt::dir_dump_job(
 class yabt::etc_dir_dump_job(
     $retention_period = 14,
     $full_period = 7,
+    $incremental = undef,
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
     $dump_location = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     yabt::dir_dump_job { 'dir_etc':
         ensure           => $ensure,
+        enabled          => $enabled,
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,
         retention_period => $retention_period,
         full_period      => $full_period,
+        incremental      => $incremental,
         path             => '/etc',
         dump_location    => $dump_location,
     }
@@ -296,6 +327,7 @@ define yabt::mysqldb_dump_job(
     $recurrence = 'daily',
     $at = undef,
     $dump_location = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     $changes = $storage_dir ? {
@@ -305,6 +337,7 @@ define yabt::mysqldb_dump_job(
 
     yabt::dump_job { "${name}": # mysqldb_${name}
         ensure           => $ensure,
+        enabled          => $enabled,
         type             => "yabt\\MysqlDbDumpJob",
         phase            => $phase,
         recurrence       => $recurrence,
@@ -323,33 +356,23 @@ define yabt::mysqldb_dump_job(
     }
 }
 
-
-# SVN repository dump job (single repository or multiple repositories)
+# SVN repository dump job (basic)
 define yabt::svn_dump_job (
     $parent_path,
-    $repository = undef,
 
     $retention_period = 14,
     $full_period = 7,
+    $incremental = undef,
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
     $dump_location = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
-    $changes = $repository ? {
-        undef => [
-            "set svn/all_repositories 1",
-            "rm svn/repository",
-        ],
-        default => [
-            "set svn/repository $repository",
-            "rm svn/all_repositories",
-        ],
-    }
-
     yabt::dump_job { $name:
         ensure           => $ensure,
+        enabled          => $enabled,
         type             => "yabt\\SvnDumpJob",
         phase            => $phase,
         recurrence       => $recurrence,
@@ -357,6 +380,7 @@ define yabt::svn_dump_job (
         section          => "svn",
         retention_period => $retention_period,
         full_period      => $full_period,
+        incremental      => $incremental,
         dump_location    => $dump_location,
         changes          => concat([
             "set svn/parent_path $parent_path",
@@ -365,25 +389,29 @@ define yabt::svn_dump_job (
 }
 
 
-# SVN repository dump job (all repositories in a directory)
+# SVN repository dump job (all repositories/subdirectories in a directory)
 define yabt::svnrepositories_dump_job (
     $parent_path,
 
     $retention_period = 14,
     $full_period = 7,
+    $incremental = undef,
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
     $dump_location = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     yabt::svn_dump_job { $name:
         ensure           => $ensure,
+        enabled          => $enabled,
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,
         retention_period => $retention_period,
         full_period      => $full_period,
+        incremental      => $incremental,
         dump_location    => $dump_location,
         parent_path      => $parent_path,
     }
@@ -398,6 +426,7 @@ define yabt::rsync_job (
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     $changes = $destination ? {
@@ -407,6 +436,7 @@ define yabt::rsync_job (
 
     yabt::job { $name:
         ensure     => $ensure,
+        enabled    => $enabled,
         type       => "yabt\\RsyncJob",
         phase      => $phase,
         recurrence => $recurrence,
@@ -431,6 +461,7 @@ define yabt::duplicity_job (
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     $changes = $target_url ? {
@@ -440,6 +471,7 @@ define yabt::duplicity_job (
 
     yabt::job { $name:
         ensure     => $ensure,
+        enabled    => $enabled,
         type       => "yabt\\DuplicityJob",
         phase      => $phase,
         recurrence => $recurrence,
@@ -466,6 +498,7 @@ define yabt::rdiffbackup_job (
     $phase = 5,
     $recurrence = 'daily',
     $at = undef,
+    $enabled = true,
     $ensure = 'present',
 ) {
     $changes = $destination ? {
@@ -475,6 +508,7 @@ define yabt::rdiffbackup_job (
 
     yabt::job { $name:
         ensure     => $ensure,
+        enabled    => $enabled,
         type       => "yabt\\RdiffBackupJob",
         phase      => $phase,
         recurrence => $recurrence,
