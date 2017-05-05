@@ -6,7 +6,7 @@ class yabt::install (
     $ensure  = 'present',
 ) {
     class { 'yabt::install::github':
-        version => $version,
         ensure  => $ensure,
+        version => $version,
     }
 }
