@@ -1,6 +1,6 @@
 {
   "name": "mikmanzato-yabt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Michele Manzato",
   "summary": "Install and configure yabt, Yet another backup tool.",
   "license": "MIT",
@@ -8,7 +8,10 @@
   "project_page": "https://github.com/mikmanzato/puppet-yabt",
   "issues_url": "https://github.com/mikmanzato/puppet-yabt/issues",
   "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.11.0"
+    }
   ],
   "operatingsystem_support": [
     {

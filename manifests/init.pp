@@ -20,53 +20,53 @@ class yabt(
     include yabt::config
 #    include mm::php::cli
 
-	class { 'yabt::install':
-		version => $version,
-		ensure  => $ensure,
-	}
+    class { 'yabt::install':
+        ensure  => $ensure,
+        version => $version,
+    }
 
     if ($ensure == 'present') {
-		$main_conf = "${yabt::config::etc_dir}/main.conf"
+        $main_conf = "${yabt::config::etc_dir}/main.conf"
 
-		$notifications_changes = $notifications_enabled ? {
-			true => [
-				"set notifications/enabled 1",
-				"set notifications/smtp_hostname $notifications_smtp_hostname",
-				"set notifications/from $notifications_from",
-				"set notifications/recipients $notifications_recipients",
-			],
-			false => [
-				"rm notifications/enabled",
-				"rm notifications/smtp_hostname",
-				"rm notifications/from",
-				"rm notifications/recipients",
-			],
-		}
+        $notifications_changes = $notifications_enabled ? {
+            true => [
+                'set notifications/enabled 1',
+                "set notifications/smtp_hostname ${notifications_smtp_hostname}",
+                "set notifications/from ${notifications_from}",
+                "set notifications/recipients ${notifications_recipients}",
+            ],
+            false => [
+                'rm notifications/enabled',
+                'rm notifications/smtp_hostname',
+                'rm notifications/from',
+                'rm notifications/recipients',
+            ],
+        }
 
-		$dump_changes = $dump_location ? {
-			undef => [ "rm dump/location" ],
-			default => [ "set dump/location $dump_location" ],
-		}
+        $dump_changes = $dump_location ? {
+            undef => [ 'rm dump/location' ],
+            default => [ "set dump/location ${dump_location}" ],
+        }
 
-		$duplicity_changes = $duplicity_target_url ? {
-			undef => [ "rm duplicity/target_url" ],
-			default => [ "set duplicity/target_url $duplicity_target_url" ],
-		}
+        $duplicity_changes = $duplicity_target_url ? {
+            undef => [ 'rm duplicity/target_url' ],
+            default => [ "set duplicity/target_url ${duplicity_target_url}" ],
+        }
 
-		$rdiffbackup_changes = $rdiffbackup_destination ? {
-			undef => [ "rm rdiff-backup/destination" ],
-			default => [ "set rdiff-backup/destination $rdiffbackup_destination" ],
-		}
+        $rdiffbackup_changes = $rdiffbackup_destination ? {
+            undef => [ 'rm rdiff-backup/destination' ],
+            default => [ "set rdiff-backup/destination ${rdiffbackup_destination}" ],
+        }
 
-		$rsync_changes = $rsync_destination ? {
-			undef => [ "rm rsync/destination" ],
-			default => [ "set rsync/destination $rsync_destination" ],
-		}
+        $rsync_changes = $rsync_destination ? {
+            undef => [ 'rm rsync/destination' ],
+            default => [ "set rsync/destination ${rsync_destination}" ],
+        }
 
         file { $yabt::config::etc_dir:
-            ensure => 'directory',
-            owner  => 'root',
-            group  => 'root',
+            ensure  => 'directory',
+            owner   => 'root',
+            group   => 'root',
             require => Class['yabt::install'],
         }
 
@@ -90,27 +90,27 @@ class yabt(
             require => File[$yabt::config::etc_dir],
         }
 
-		# Job to notify overall status (only failures)
-		if ($sn_recurrence != false) {
-			yabt::status_notification_job { 'sn':
-				complete   => 0,
-				at         => $sn_at,
-				recurrence => $sn_recurrence,
-				ensure     => $ensure,
-				require => File[$yabt::config::etc_dir],
-			}
-		}
+        # Job to notify overall status (only failures)
+        if ($sn_recurrence != false) {
+            yabt::status_notification_job { 'sn':
+                ensure     => $ensure,
+                complete   => 0,
+                at         => $sn_at,
+                recurrence => $sn_recurrence,
+                require    => File[$yabt::config::etc_dir],
+            }
+        }
 
-		# Job to notify complete status
-		if ($sn_complete_recurrence != false) {
-			yabt::status_notification_job { 'snc':
-				complete   => 1,
-				at         => $sn_complete_at,
-				recurrence => $sn_complete_recurrence,
-				ensure     => $ensure,
-				require => File[$yabt::config::etc_dir],
-			}
-		}
+        # Job to notify complete status
+        if ($sn_complete_recurrence != false) {
+            yabt::status_notification_job { 'snc':
+                ensure     => $ensure,
+                complete   => 1,
+                at         => $sn_complete_at,
+                recurrence => $sn_complete_recurrence,
+                require    => File[$yabt::config::etc_dir],
+            }
+        }
     }
 }
 
@@ -134,23 +134,23 @@ define yabt::job (
         include yabt
 
         $enabled_changes = $enabled ? {
-            true   => [ "set job/enabled 1" ],
-            default => [ "set job/enabled 0" ],
+            true   => [ 'set job/enabled 1' ],
+            default => [ 'set job/enabled 0' ],
         }
 
         $phase_changes = $phase ? {
-            undef   => [ "rm job/phase" ],
-            default => [ "set job/phase $phase" ],
+            undef   => [ 'rm job/phase' ],
+            default => [ "set job/phase ${phase}" ],
         }
 
         $recurrence_changes = $recurrence ? {
-            undef   => [ "rm job/recurrence" ],
-            default => [ "set job/recurrence $recurrence" ],
+            undef   => [ 'rm job/recurrence' ],
+            default => [ "set job/recurrence ${recurrence}" ],
         }
 
         $at_changes = $at ? {
-            undef   => [ "rm job/at" ],
-            default => [ "set job/at $at" ],
+            undef   => [ 'rm job/at' ],
+            default => [ "set job/at ${at}" ],
         }
 
         # Create empty conf file, otherwise augeas doesn't work properly
@@ -165,8 +165,8 @@ define yabt::job (
             lens    => 'Puppet.lns',
             incl    => $full_conf,
             changes => concat([
-                "set job/name $name",
-                "set job/type $type",
+                "set job/name ${name}",
+                "set job/type ${type}",
             ], $enabled_changes, $phase_changes, $recurrence_changes, $at_changes, $changes),
             require => Exec["yabt_create_job_${full_conf}"],
         }
@@ -189,14 +189,14 @@ define yabt::status_notification_job (
     $ensure = 'present',
 ) {
     $complete_changes = $complete ? {
-        undef   => [ "rm status-notification/complete" ],
-        default => [ "set status-notification/complete $complete" ],
+        undef   => [ 'rm status-notification/complete' ],
+        default => [ "set status-notification/complete ${complete}" ],
     }
 
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
-        type       => "yabt\\StatusNotificationJob",
+        type       => 'yabt\\StatusNotificationJob',
         phase      => $phase,
         recurrence => $recurrence,
         at         => $at,
@@ -209,24 +209,26 @@ define yabt::status_notification_job (
 # Generic dump job
 define yabt::dump_job (
     $type,
+    $section,
+    $changes,
     $retention_period = 14,
     $full_period = 7,
     $incremental = undef,
     $phase = 5,
-    $recurrence,
+    $recurrence = 'daily',
     $at = undef,
-    $section,
-    $changes,
     $dump_location = undef,
     $enabled = true,
     $ensure = 'present',
 ) {
     $incremental_val = $incremental ? {
-		false => 0,
-		true  => 1,
-		undef => undef,
-	}
-
+        false => 0,
+        true  => 1,
+        undef => undef,
+    }
+    
+    $incremental_val_not_undef = $incremental_val != undef
+    
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
@@ -235,18 +237,18 @@ define yabt::dump_job (
         recurrence => $recurrence,
         at         => $at,
         changes    => concat([
-            "set ${section}/retention_period $retention_period",
-            "set ${section}/full_period $full_period",
-        ], 
+            "set ${section}/retention_period ${retention_period}",
+            "set ${section}/full_period ${full_period}",
+        ],
         $dump_location ? {
-			undef => [ "rm ${section}/location" ],
-			default => [ "set ${section}/location $dump_location" ],
-		}, 
-        ($incremental_val != undef) ? {
-			true    => [ "set ${section}/incremental $incremental_val" ],
-			default => [ "rm ${section}/incremental" ],
-		}, 
-		$changes),
+            undef   => [ "rm ${section}/location" ],
+            default => [ "set ${section}/location ${dump_location}" ],
+        },
+        $incremental_val_not_undef ? {
+            true    => [ "set ${section}/incremental ${incremental_val}" ],
+            default => [ "rm ${section}/incremental" ],
+        },
+        $changes),
     }
 }
 
@@ -268,23 +270,23 @@ define yabt::dir_dump_job(
     yabt::dump_job { $name:
         ensure           => $ensure,
         enabled          => $enabled,
-        type             => "yabt\\DirDumpJob",
+        type             => 'yabt\\DirDumpJob',
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,
         retention_period => $retention_period,
         full_period      => $full_period,
         incremental      => $incremental,
-        section          => "dir",
+        section          => 'dir',
         dump_location    => $dump_location,
         changes          => [
-            "set dir/path $path",
+            "set dir/path ${path}",
         ],
     }
 }
 
 
-# "/etc" directory dump job
+# '/etc' directory dump job
 class yabt::etc_dir_dump_job(
     $retention_period = 14,
     $full_period = 7,
@@ -331,27 +333,27 @@ define yabt::mysqldb_dump_job(
     $ensure = 'present',
 ) {
     $changes = $storage_dir ? {
-        undef => [ "rm mysqldb/storage_dir" ],
-        default => [ "set mysqldb/storage_dir $storage_dir" ],
+        undef => [ 'rm mysqldb/storage_dir' ],
+        default => [ "set mysqldb/storage_dir ${storage_dir}" ],
     }
 
-    yabt::dump_job { "${name}": # mysqldb_${name}
+    yabt::dump_job { $name: # mysqldb_${name}
         ensure           => $ensure,
         enabled          => $enabled,
-        type             => "yabt\\MysqlDbDumpJob",
+        type             => 'yabt\\MysqlDbDumpJob',
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,
-        section          => "mysqldb",
+        section          => 'mysqldb',
         retention_period => $retention_period,
         full_period      => $full_period,
         dump_location    => $dump_location,
         changes          => concat([
-            "set mysqldb/user $user",
-            "set mysqldb/password $password",
-            "set mysqldb/hostname $hostname",
-            "set mysqldb/dbname $dbname",
-            "set mysqldb/port $port",
+            "set mysqldb/user ${user}",
+            "set mysqldb/password ${password}",
+            "set mysqldb/hostname ${hostname}",
+            "set mysqldb/dbname ${dbname}",
+            "set mysqldb/port ${port}",
         ], $changes),
     }
 }
@@ -373,17 +375,17 @@ define yabt::svn_dump_job (
     yabt::dump_job { $name:
         ensure           => $ensure,
         enabled          => $enabled,
-        type             => "yabt\\SvnDumpJob",
+        type             => 'yabt\\SvnDumpJob',
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,
-        section          => "svn",
+        section          => 'svn',
         retention_period => $retention_period,
         full_period      => $full_period,
         incremental      => $incremental,
         dump_location    => $dump_location,
         changes          => concat([
-            "set svn/parent_path $parent_path",
+            "set svn/parent_path ${parent_path}",
         ], $changes),
     }
 }
@@ -430,21 +432,21 @@ define yabt::rsync_job (
     $ensure = 'present',
 ) {
     $changes = $destination ? {
-        undef => [ "rm rsync/destination" ],
-        default => [ "set rsync/destination $destination" ],
+        undef => [ 'rm rsync/destination' ],
+        default => [ "set rsync/destination ${destination}" ],
     }
 
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
-        type       => "yabt\\RsyncJob",
+        type       => 'yabt\\RsyncJob',
         phase      => $phase,
         recurrence => $recurrence,
         at         => $at,
         changes    => concat([
-            "set rsync/source $source",
-            "rm rdiff-backup",
-            "rm duplicity",
+            "set rsync/source ${source}",
+            'rm rdiff-backup',
+            'rm duplicity',
         ], $changes),
     }
 }
@@ -465,24 +467,24 @@ define yabt::duplicity_job (
     $ensure = 'present',
 ) {
     $changes = $target_url ? {
-        undef => [ "rm duplicity/target_url" ],
-        default => [ "set duplicity/target_url $target_url" ],
+        undef => [ 'rm duplicity/target_url' ],
+        default => [ "set duplicity/target_url ${target_url}" ],
     }
 
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
-        type       => "yabt\\DuplicityJob",
+        type       => 'yabt\\DuplicityJob',
         phase      => $phase,
         recurrence => $recurrence,
         at         => $at,
         changes    => concat([
-            "set duplicity/source_dir $source_dir",
-            "set duplicity/passphrase $passphrase",
-            "set duplicity/retention_period $retention_period",
-            "set duplicity/full_period $full_period",
-            "rm rdiff-backup",
-            "rm rsync",
+            "set duplicity/source_dir ${source_dir}",
+            "set duplicity/passphrase ${passphrase}",
+            "set duplicity/retention_period ${retention_period}",
+            "set duplicity/full_period ${full_period}",
+            'rm rdiff-backup',
+            'rm rsync',
         ], $changes),
     }
 }
@@ -502,22 +504,22 @@ define yabt::rdiffbackup_job (
     $ensure = 'present',
 ) {
     $changes = $destination ? {
-        undef => [ "rm rdiff-backup/destination" ],
-        default => [ "set rdiff-backup/destination $destination" ],
+        undef => [ 'rm rdiff-backup/destination' ],
+        default => [ "set rdiff-backup/destination ${destination}" ],
     }
 
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
-        type       => "yabt\\RdiffBackupJob",
+        type       => 'yabt\\RdiffBackupJob',
         phase      => $phase,
         recurrence => $recurrence,
         at         => $at,
         changes    => concat([
-            "set rdiff-backup/source $source",
-            "set rdiff-backup/retention_period $retention_period",
-            "rm duplicity",
-            "rm rsync",
+            "set rdiff-backup/source ${source}",
+            "set rdiff-backup/retention_period ${retention_period}",
+            'rm duplicity',
+            'rm rsync',
         ], $changes),
     }
 }
