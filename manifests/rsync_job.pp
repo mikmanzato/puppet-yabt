@@ -7,6 +7,8 @@ define yabt::rsync_job (
     $recurrence = 'daily',
     $at = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     $changes = $destination ? {
@@ -17,6 +19,8 @@ define yabt::rsync_job (
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
+        pre_cmd    => $pre_cmd,
+        post_cmd   => $post_cmd,
         type       => 'yabt\\RsyncJob',
         phase      => $phase,
         recurrence => $recurrence,

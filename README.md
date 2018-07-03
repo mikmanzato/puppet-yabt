@@ -393,6 +393,27 @@ disable job execution, still preserving the configuration file.
 Default: 'present', which means that the job is configured. Use 'absent' to 
 remove the job.
 
+##### `pre_cmd`
+
+Default: none. An optional command to be executed before running the actual 
+job. It MUST return 0 (success) otherwise the job execution is stopped. The 
+command may do some preparatory work (e.g. stopping some services which could 
+interfere with a clean backup) or check some pre-conditions. Example:
+
+    pre_cmd=/usr/sbin/service apache2 stop
+
+Available since yabt version 1.2.0.
+
+##### `post_cmd`
+
+Default: none. An optional command to be executed after the actual job has 
+been run. The command may do some cleanup work (e.g. restart some services that 
+were stopped by `pre_cmd`).
+
+    post_cmd=/usr/sbin/service apache2 start
+
+Available since yabt version 1.2.0.
+
 
 #### Common dump job parameters
 

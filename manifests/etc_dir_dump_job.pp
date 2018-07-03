@@ -8,11 +8,15 @@ class yabt::etc_dir_dump_job(
     $at = undef,
     $dump_location = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     yabt::dir_dump_job { 'dir_etc':
         ensure           => $ensure,
         enabled          => $enabled,
+        pre_cmd          => $pre_cmd,
+        post_cmd         => $post_cmd,
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,

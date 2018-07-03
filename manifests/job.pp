@@ -7,6 +7,8 @@ define yabt::job (
     $recurrence = undef,
     $at = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     include yabt::config
@@ -19,6 +21,16 @@ define yabt::job (
         $enabled_changes = $enabled ? {
             true   => [ 'set job/enabled 1' ],
             default => [ 'set job/enabled 0' ],
+        }
+
+        $pre_cmd_changes = $pre_cmd ? {
+            undef   => [ 'rm job/pre_cmd' ],
+            default => [ "set job/pre_cmd ${pre_cmd}" ],
+        }
+
+        $post_cmd_changes = $post_cmd ? {
+            undef   => [ 'rm job/post_cmd' ],
+            default => [ "set job/post_cmd ${post_cmd}" ],
         }
 
         $phase_changes = $phase ? {
@@ -50,7 +62,8 @@ define yabt::job (
             changes => concat([
                 "set job/name ${name}",
                 "set job/type ${type}",
-            ], $enabled_changes, $phase_changes, $recurrence_changes, $at_changes, $changes),
+            ], $enabled_changes, $phase_changes, $recurrence_changes, 
+            $at_changes, $pre_cmd_changes, $post_cmd_changes, $changes),
             require => Exec["yabt_create_job_${full_conf}"],
         }
     }

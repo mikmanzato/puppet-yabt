@@ -9,6 +9,8 @@ define yabt::rdiffbackup_job (
     $recurrence = 'daily',
     $at = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     $changes = $destination ? {
@@ -19,6 +21,8 @@ define yabt::rdiffbackup_job (
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
+        pre_cmd    => $pre_cmd,
+        post_cmd   => $post_cmd,
         type       => 'yabt\\RdiffBackupJob',
         phase      => $phase,
         recurrence => $recurrence,

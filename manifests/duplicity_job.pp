@@ -10,6 +10,8 @@ define yabt::duplicity_job (
     $recurrence = 'daily',
     $at = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     $changes = $target_url ? {
@@ -20,6 +22,8 @@ define yabt::duplicity_job (
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
+        pre_cmd    => $pre_cmd,
+        post_cmd   => $post_cmd,
         type       => 'yabt\\DuplicityJob',
         phase      => $phase,
         recurrence => $recurrence,

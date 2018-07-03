@@ -10,11 +10,15 @@ define yabt::svnrepositories_dump_job (
     $at = undef,
     $dump_location = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     yabt::svn_dump_job { $name:
         ensure           => $ensure,
         enabled          => $enabled,
+        pre_cmd          => $pre_cmd,
+        post_cmd         => $post_cmd,
         phase            => $phase,
         recurrence       => $recurrence,
         at               => $at,

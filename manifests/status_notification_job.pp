@@ -5,6 +5,8 @@ define yabt::status_notification_job (
     $recurrence = 'weekly',
     $at = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     $complete_changes = $complete ? {
@@ -15,6 +17,8 @@ define yabt::status_notification_job (
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
+        pre_cmd    => $pre_cmd,
+        post_cmd   => $post_cmd,
         type       => 'yabt\\StatusNotificationJob',
         phase      => $phase,
         recurrence => $recurrence,

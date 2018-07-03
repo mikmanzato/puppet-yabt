@@ -15,6 +15,8 @@ define yabt::mysqldb_dump_job(
     $at = undef,
     $dump_location = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     $changes = $storage_dir ? {
@@ -25,6 +27,8 @@ define yabt::mysqldb_dump_job(
     yabt::dump_job { $name: # mysqldb_${name}
         ensure           => $ensure,
         enabled          => $enabled,
+        pre_cmd          => $pre_cmd,
+        post_cmd         => $post_cmd,
         type             => 'yabt\\MysqlDbDumpJob',
         phase            => $phase,
         recurrence       => $recurrence,

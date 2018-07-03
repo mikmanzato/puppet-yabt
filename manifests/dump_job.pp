@@ -12,6 +12,8 @@ define yabt::dump_job (
     $at = undef,
     $dump_location = undef,
     $enabled = true,
+    $pre_cmd = undef,
+    $post_cmd = undef,
     $ensure = 'present',
 ) {
     $incremental_val = $incremental ? {
@@ -25,6 +27,8 @@ define yabt::dump_job (
     yabt::job { $name:
         ensure     => $ensure,
         enabled    => $enabled,
+        pre_cmd    => $pre_cmd,
+        post_cmd   => $post_cmd,
         type       => $type,
         phase      => $phase,
         recurrence => $recurrence,
